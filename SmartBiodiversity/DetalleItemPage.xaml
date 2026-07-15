@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SmartBiodiversity.DetalleItemPage"
+             Title="DetalleItemPage"
+             BackgroundColor="White"
+             Shell.NavBarIsVisible="False">
+    <Grid RowDefinitions="Auto, *, Auto">
+
+        <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Padding="20,30,20,10">
+            <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                <Image Source="hoja_icono.png" HeightRequest="30"/>
+                <Label Text="Smart&#10;Biodiversity" FontSize="12" TextColor="Black" />
+            </HorizontalStackLayout>
+            <Image Grid.Column="1" Source="utn_logo.png" HeightRequest="35"/>
+        </Grid>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="20,10,20,20" Spacing="15">
+
+                <HorizontalStackLayout Spacing="5" Margin="0,0,0,5">
+                    <Label Text="←" FontSize="18" TextColor="Black" VerticalOptions="Center"/>
+                    <Label Text="Regresar" FontSize="14" TextColor="Gray" VerticalOptions="Center"/>
+                    <HorizontalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnRegresarTapped" />
+                    </HorizontalStackLayout.GestureRecognizers>
+                </HorizontalStackLayout>
+
+                <Label Text="{Binding Nombre}" FontSize="24" FontAttributes="Bold" TextColor="Black"/>
+
+                <Border BackgroundColor="#E0E0E0" StrokeThickness="0" StrokeShape="RoundRectangle 15" HeightRequest="250">
+                    <Label Text="(aquí va la imagen)" TextColor="Gray" HorizontalOptions="Center" VerticalOptions="Center"/>
+                </Border>
+
+                <Border BackgroundColor="#D1F2FA" StrokeThickness="0" StrokeShape="RoundRectangle 10" Padding="15">
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Descripción" FontAttributes="Bold" TextColor="Black"/>
+                        <Label Text="{Binding DescripcionLarga}" TextColor="Black" FontSize="13"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Grid ColumnDefinitions="*, *" ColumnSpacing="15">
+
+                    <Border Grid.Column="0" BackgroundColor="#D1F2FA" StrokeThickness="0" StrokeShape="RoundRectangle 10" Padding="15">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="Tamaño:" FontAttributes="Bold" TextColor="Black" FontSize="12"/>
+                            <Label Text="{Binding Tamano}" TextColor="Black" FontSize="12" Margin="0,0,0,5"/>
+
+                            <Label Text="Dieta:" FontAttributes="Bold" TextColor="Black" FontSize="12"/>
+                            <Label Text="{Binding Dieta}" TextColor="Black" FontSize="12" Margin="0,0,0,5"/>
+
+                            <Label Text="Estado:" FontAttributes="Bold" TextColor="Black" FontSize="12"/>
+                            <Label Text="{Binding Estado}" TextColor="Black" FontSize="12"/>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Grid.Column="1" BackgroundColor="#D1F2FA" StrokeThickness="0" StrokeShape="RoundRectangle 10" Padding="15">
+                        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="10">
+                            <Label Text="🗺️" FontSize="30" HorizontalOptions="Center"/>
+                            <Label Text="Ver Mapa de&#10;Avistamientos" FontAttributes="Bold" TextColor="Black" FontSize="12" HorizontalTextAlignment="Center"/>
+                        </VerticalStackLayout>
+                    </Border>
+
+                </Grid>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Border Grid.Row="2" Stroke="#E0E0E0" StrokeThickness="1" BackgroundColor="White" Padding="0,10,0,15" Margin="-2,0,-2,-2">
+        </Border>
+        <Border Grid.Row="2" Stroke="#E0E0E0" StrokeThickness="1" BackgroundColor="White" Padding="0,10,0,15" Margin="-2,0,-2,-2">
+            <Grid ColumnDefinitions="*, *, *, *">
+
+                <VerticalStackLayout Grid.Column="0" HorizontalOptions="Center" Spacing="2">
+                    <Image Source="inicio_icono.png" HeightRequest="25"/>
+                    <Label Text="Inicio" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnInicioTapped" />
+                    </VerticalStackLayout.GestureRecognizers>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center" Spacing="2">
+                    <Image Source="mapa_icono.png" HeightRequest="25"/>
+                    <Label Text="Mapa" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnMapaTapped" />
+                    </VerticalStackLayout.GestureRecognizers>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center" Spacing="2">
+                    <Image Source="identificar_icono.png" HeightRequest="25"/>
+                    <Label Text="Identificar" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="3" HorizontalOptions="Center" Spacing="2">
+                    <Image Source="perfil_icono.png" HeightRequest="25"/>
+                    <Label Text="Perfil" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnPerfilTapped" />
+                    </VerticalStackLayout.GestureRecognizers>
+                </VerticalStackLayout>
+
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>

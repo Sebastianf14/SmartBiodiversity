@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SmartBiodiversity.CatalogoFloraPage"
+             Title="CatalogoFloraPage"
+             BackgroundColor="White"
+             Shell.NavBarIsVisible="False">
+    <Grid RowDefinitions="Auto, Auto, Auto, *, Auto">
+
+        <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Padding="20,30,20,10">
+            <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                <Image Source="hoja_icono.png" HeightRequest="30"/>
+                <Label Text="Smart&#10;Biodiversity" FontSize="12" TextColor="Black" />
+            </HorizontalStackLayout>
+            <Image Grid.Column="1" Source="utn_logo.png" HeightRequest="35"/>
+        </Grid>
+
+        <Label Grid.Row="1" Text="Catálogo de Flora" FontSize="18" FontAttributes="Bold" TextColor="Black" Padding="20,10,20,5"/>
+
+        <Border Grid.Row="2" Margin="20,10,20,20" Stroke="Black" StrokeThickness="1" BackgroundColor="White">
+            <SearchBar x:Name="searchBarFlora" Placeholder="Buscar por nombre..." TextColor="Black" PlaceholderColor="Gray"/>
+        </Border>
+
+        <CollectionView x:Name="listaFlora" Grid.Row="3" Margin="20,0">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border BackgroundColor="#E0E0E0" StrokeThickness="0" StrokeShape="RoundRectangle 10" Margin="0,0,0,15" Padding="15">
+                        <Grid ColumnDefinitions="Auto, *, Auto">
+
+                            <Image Grid.Column="0" Source="flora_icono.png" HeightRequest="50" WidthRequest="50" VerticalOptions="Center"/>
+
+                            <Label Grid.Column="1" Text="{Binding Nombre}" TextColor="Black" VerticalOptions="Center" Margin="15,0"/>
+
+                            <Label Grid.Column="2" Text="Detalle" FontAttributes="Bold" TextColor="Black" VerticalOptions="Center">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnDetalleTapped" CommandParameter="{Binding .}"/>
+                                </Label.GestureRecognizers>
+                            </Label>
+
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <Border Grid.Row="4" Stroke="#E0E0E0" StrokeThickness="1" BackgroundColor="White" Padding="0,10,0,15" Margin="-2,0,-2,-2">
+            <Grid ColumnDefinitions="*, *, *, *">
+
+                <VerticalStackLayout Grid.Column="0" HorizontalOptions="Center" Spacing="2">
+                    <Image Source="inicio_icono.png" HeightRequest="25"/>
+                    <Label Text="Inicio" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnInicioTapped" />
+                    </VerticalStackLayout.GestureRecognizers>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center" Spacing="2">
+                    <Image Source="mapa_icono.png" HeightRequest="25"/>
+                    <Label Text="Mapa" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center" Spacing="2">
+                    <Image Source="identificar_icono.png" HeightRequest="25"/>
+                    <Label Text="Identificar" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="3" HorizontalOptions="Center" Spacing="2">
+                    <Image Source="perfil_icono.png" HeightRequest="25"/>
+                    <Label Text="Perfil" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+
+            </Grid>
+        </Border>
+
+    </Grid>
+</ContentPage>

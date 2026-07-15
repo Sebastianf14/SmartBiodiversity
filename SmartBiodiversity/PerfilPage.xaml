@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SmartBiodiversity.PerfilPage"
+             Title="PerfilPage"
+             BackgroundColor="White"
+             Shell.NavBarIsVisible="False">
+    <Grid RowDefinitions="Auto, *, Auto">
+
+        <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Padding="20,30,20,10">
+            <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                <Image Source="hoja_icono.png" HeightRequest="30"/>
+                <Label Text="Smart&#10;Biodiversity" FontSize="12" TextColor="Black" />
+            </HorizontalStackLayout>
+            <Image Grid.Column="1" Source="utn_logo.png" HeightRequest="35"/>
+        </Grid>
+
+        <VerticalStackLayout Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Center" Spacing="15">
+
+            <Image Source="perfil_icono.png" HeightRequest="100" WidthRequest="100" HorizontalOptions="Center"/>
+
+            <Label Text="HOLA, USUARIO" FontSize="20" FontAttributes="Bold" TextColor="Black" HorizontalOptions="Center"/>
+
+            <Label Text="admin@utn.edu.ec" FontSize="16" TextColor="Gray" HorizontalOptions="Center" Margin="0,0,0,30"/>
+
+            <Button Text="CERRAR SESIÓN" 
+                    Clicked="OnCerrarSesionClicked" 
+                    BackgroundColor="#D32F2F" 
+                    TextColor="White" 
+                    FontAttributes="Bold" 
+                    CornerRadius="25" 
+                    HeightRequest="50"
+                    WidthRequest="220"
+                    HorizontalOptions="Center"/>
+
+        </VerticalStackLayout>
+
+        <Border Grid.Row="2" Stroke="#E0E0E0" StrokeThickness="1" BackgroundColor="White" Padding="0,10,0,15" Margin="-2,0,-2,-2">
+            <Grid ColumnDefinitions="*, *, *, *">
+
+                <VerticalStackLayout Grid.Column="0" HorizontalOptions="Center" Spacing="2">
+                    <Image Source="inicio_icono.png" HeightRequest="25"/>
+                    <Label Text="Inicio" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnInicioTapped" />
+                    </VerticalStackLayout.GestureRecognizers>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center" Spacing="2">
+                    <Image Source="mapa_icono.png" HeightRequest="25"/>
+                    <Label Text="Mapa" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center" Spacing="2">
+                    <Image Source="identificar_icono.png" HeightRequest="25"/>
+                    <Label Text="Identificar" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="3" HorizontalOptions="Center" Spacing="2">
+                    <Image Source="perfil_icono.png" HeightRequest="25"/>
+                    <Label Text="Perfil" FontSize="12" TextColor="#2E7D32" FontAttributes="Bold" HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+
+            </Grid>
+        </Border>
+
+    </Grid>
+</ContentPage>

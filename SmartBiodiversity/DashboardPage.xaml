@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SmartBiodiversity.DashboardPage"
+             BackgroundColor="White"
+             Title="DashboardPage"
+             Shell.NavBarIsVisible="False">
+    <Grid RowDefinitions="*, Auto">
+    <ScrollView Grid.Row="0">
+        <VerticalStackLayout Padding="20,40,20,20">
+
+            <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,30">
+                <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                    <Image Source="hoja_icono.png" HeightRequest="35" VerticalOptions="Center"/>
+                    <Label Text="Smart&#10;Biodiversity" FontSize="14" TextColor="Black" VerticalOptions="Center"/>
+                </HorizontalStackLayout>
+
+                <HorizontalStackLayout Grid.Column="1" Spacing="10" VerticalOptions="Center">
+                    <Image Source="usuario_icono.png" HeightRequest="35" VerticalOptions="Center"/>
+                    <Label Text="USUARIO" TextColor="Black" FontSize="14" VerticalOptions="Center"/>
+                </HorizontalStackLayout>
+            </Grid>
+
+            <Label Text="HOLA, USUARIO!" FontSize="20" FontAttributes="Bold" TextColor="Black"/>
+            <Label Text="Explora la biodiversidad del campus." FontSize="14" TextColor="Black" Margin="0,0,0,25"/>
+
+            <Border Stroke="#BDBDBD" StrokeThickness="1" StrokeShape="RoundRectangle 10" Margin="0,0,0,20">
+                <VerticalStackLayout>
+
+                    <Grid ColumnDefinitions="Auto, *" Padding="20">
+                        <Image Grid.Column="0" Source="flora_icono.png" HeightRequest="70" WidthRequest="70" VerticalOptions="Center"/>
+                        <VerticalStackLayout Grid.Column="1" Margin="15,0,0,0" VerticalOptions="Center">
+                            <Label Text="FLORA" FontSize="16" FontAttributes="Bold" TextColor="Black"/>
+                            <Label Text="Descubre plantas, árboles y vegetación del campus." FontSize="14" TextColor="#424242"/>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <Grid BackgroundColor="#DDE6DA" Padding="15,10">
+                        <Label Text="Ver más ➔" TextColor="Black" HorizontalOptions="End" VerticalOptions="Center"/>
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnVerMasFloraTapped" />
+                        </Grid.GestureRecognizers>
+                    </Grid>
+
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Stroke="#BDBDBD" StrokeThickness="1" StrokeShape="RoundRectangle 10" Margin="0,0,0,20">
+                <VerticalStackLayout>
+
+                    <Grid ColumnDefinitions="Auto, *" Padding="20">
+                        <Image Grid.Column="0" Source="fauna_icono.png" HeightRequest="70" WidthRequest="70" VerticalOptions="Center"/>
+                        <VerticalStackLayout Grid.Column="1" Margin="15,0,0,0" VerticalOptions="Center">
+                            <Label Text="FAUNA" FontSize="16" FontAttributes="Bold" TextColor="Black"/>
+                            <Label Text="Conoce animales, aves y vida silvestre." FontSize="14" TextColor="#424242"/>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <Grid BackgroundColor="#E3E6E8" Padding="15,10">
+                        <Label Text="Ver más ➔" TextColor="Black" HorizontalOptions="End" VerticalOptions="Center"/>
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnVerMasFaunaTapped" />
+                        </Grid.GestureRecognizers>
+                    </Grid>
+
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+    <Border Grid.Row="1" Stroke="#E0E0E0" StrokeThickness="1" BackgroundColor="White" Padding="0,10,0,15" Margin="-2,0,-2,-2">
+        <Grid ColumnDefinitions="*, *, *, *">
+
+            <VerticalStackLayout Grid.Column="0" HorizontalOptions="Center" Spacing="2">
+                <Image Source="inicio_icono.png" HeightRequest="25"/>
+                <Label Text="Inicio" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center" Spacing="2">
+                    <Image Source="mapa_icono.png" HeightRequest="25"/>
+                    <Label Text="Mapa" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnMapaTapped" />
+                    </VerticalStackLayout.GestureRecognizers>
+
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center" Spacing="2">
+                <Image Source="identificar_icono.png" HeightRequest="25"/>
+                <Label Text="Identificar" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnIdentificarTapped" />
+                    </VerticalStackLayout.GestureRecognizers>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="3" HorizontalOptions="Center" Spacing="2">
+                    <Image Source="perfil_icono.png" HeightRequest="25"/>
+                    <Label Text="Perfil" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnPerfilTapped" />
+                    </VerticalStackLayout.GestureRecognizers>
+                </VerticalStackLayout>
+
+            </Grid>
+    </Border>
+
+    </Grid>
+</ContentPage>
