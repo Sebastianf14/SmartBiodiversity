@@ -27,7 +27,9 @@
                     <Border BackgroundColor="#E0E0E0" StrokeThickness="0" StrokeShape="RoundRectangle 10" Margin="0,0,0,15" Padding="15">
                         <Grid ColumnDefinitions="Auto, *, Auto">
 
-                            <Image Grid.Column="0" Source="flora_icono.png" HeightRequest="50" WidthRequest="50" VerticalOptions="Center"/>
+                            <Border Grid.Column="0" StrokeShape="RoundRectangle 8" HeightRequest="50" WidthRequest="50" StrokeThickness="0" VerticalOptions="Center">
+                                <Image Source="{Binding ImagenUrl}" Aspect="AspectFill" />
+                            </Border>
 
                             <Label Grid.Column="1" Text="{Binding Nombre}" TextColor="Black" VerticalOptions="Center" Margin="15,0"/>
 

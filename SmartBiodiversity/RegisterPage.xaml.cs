@@ -5,10 +5,12 @@ using SmartBiodiversity.Services;
 public partial class RegisterPage : ContentPage
 {
     private readonly ApiService _apiService = new ApiService();
+
     public RegisterPage()
-	{
-		InitializeComponent();
-	}
+    {
+        InitializeComponent();
+    }
+
     private bool EsClaveSegura(string clave)
     {
         if (string.IsNullOrWhiteSpace(clave)) return false;
@@ -20,7 +22,7 @@ public partial class RegisterPage : ContentPage
 
         return tieneLongitud && tieneMayuscula && tieneNumero;
     }
-    
+
     // PASO 1: Validar datos, comprobar internet y enviar código
     private async void OnEnviarCodigoClicked(object sender, EventArgs e)
     {
@@ -80,33 +82,40 @@ public partial class RegisterPage : ContentPage
             return;
         }
 
-        // 1. Verificamos el código primero
-        bool codigoValido = await _apiService.VerificarCodigoAsync(txtEmailReg.Text, codigoIngresado);
-
-        if (codigoValido)
+        try
         {
-            // 2. Si el código es válido, creamos la cuenta
-            // Nota: Tu API no pide apellidos separados en tu diseño, enviaremos todo en nombres o en blanco
-            bool cuentaCreada = await _apiService.RegistrarUsuarioAsync(
-                nombres: txtNombre.Text,
-                apellidos: "",
-                correo: txtEmailReg.Text,
-                password: txtPasswordReg.Text,
-                codigoVerif: codigoIngresado);
+            // 1. Verificamos el código primero
+            bool codigoValido = await _apiService.VerificarCodigoAsync(txtEmailReg.Text, codigoIngresado);
 
-            if (cuentaCreada)
+            if (codigoValido)
             {
-                await DisplayAlert("¡Bienvenido!", "Tu cuenta ha sido creada y verificada exitosamente.", "Iniciar Sesión");
-                await Navigation.PopAsync();
+                // 2. Si el código es válido, intentamos crear la cuenta real
+                var resultadoRegistro = await _apiService.RegistrarUsuarioAsync(
+                    nombres: txtNombre.Text,
+                    apellidos: "",
+                    correo: txtEmailReg.Text,
+                    password: txtPasswordReg.Text,
+                    codigoVerif: codigoIngresado);
+
+                if (resultadoRegistro.exito)
+                {
+                    await DisplayAlert("¡Bienvenido!", "Tu cuenta ha sido creada y verificada exitosamente.", "Iniciar Sesión");
+                    await Navigation.PopAsync();
+                }
+                else
+                {
+                    // Muestra el detalle exacto del error que rechazó la base de datos/API
+                    await DisplayAlert("Error al Registrar", resultadoRegistro.mensaje, "OK");
+                }
             }
             else
             {
-                await DisplayAlert("Error", "Hubo un problema al crear la cuenta en la base de datos.", "OK");
+                await DisplayAlert("Error", "El código es incorrecto o ha expirado.", "Reintentar");
             }
         }
-        else
+        catch (Exception ex)
         {
-            await DisplayAlert("Error", "El código es incorrecto o ha expirado.", "Reintentar");
+            await DisplayAlert("Excepción Detectada", ex.Message, "OK");
         }
     }
 
@@ -119,12 +128,17 @@ public partial class RegisterPage : ContentPage
             return;
         }
 
-        // --- AQUÍ LLAMARÁS A LA API PARA REENVIAR EL CORREO ---
-        // await apiService.SolicitarCodigoAsync(txtEmailReg.Text);
+        var resultado = await _apiService.SolicitarCodigoAsync(txtEmailReg.Text);
 
-        await DisplayAlert("Enviado", "Hemos enviado un nuevo código a tu correo.", "OK");
+        if (resultado.exito)
+        {
+            await DisplayAlert("Enviado", "Hemos enviado un nuevo código a tu correo.", "OK");
+        }
+        else
+        {
+            await DisplayAlert("Error", resultado.mensaje, "OK");
+        }
     }
-
 
     // Vuelve a la pantalla de Login sin registrar nada
     private async void OnGoToLoginTapped(object sender, EventArgs e)

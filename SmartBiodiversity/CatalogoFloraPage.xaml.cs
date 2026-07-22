@@ -1,84 +1,83 @@
 namespace SmartBiodiversity;
-
-
+using System.Text.Json.Serialization;
+using SmartBiodiversity.Services;
 public class EspecieItem
 {
+    [JsonPropertyName("id")]
+    public string Id { get; set; }
+
+    // Mapeamos 'nombreComun' de SQL al campo 'Nombre' de tu XAML
+    [JsonPropertyName("nombreComun")]
     public string Nombre { get; set; }
-    public string DescripcionCorta { get; set; }
+
+    [JsonPropertyName("nombreCientifico")]
+    public string NombreCientifico { get; set; }
+
+    [JsonPropertyName("descripcion")]
     public string DescripcionLarga { get; set; }
-    public string Tamano { get; set; }
-    public string Dieta { get; set; }
-    public string Estado { get; set; }
+
+    [JsonPropertyName("habitat")]
+    public string DescripcionCorta { get; set; }
+
+    [JsonPropertyName("categoriaId")]
+    public string CategoriaId { get; set; }
+
+    public string Tamano { get; set; } = "N/A";
+    public string Dieta { get; set; } = "N/A";
+    public string Estado { get; set; } = "N/A";
+
+    // URL de la imagen (usará el ícono por defecto si la especie aún no tiene foto en BD)
+    public string ImagenUrl { get; set; } = "flora_icono.png";
 }
 public partial class CatalogoFloraPage : ContentPage
 {
-    public class PlantaItem
-    {
-        public string Nombre { get; set; }
-        public string Descripcion { get; set; }
-        // public string ImagenUrl { get; set; } // ojo base
-    }
-    public CatalogoFloraPage()
-	{
-		InitializeComponent();
-        CargarDatosSimulados();
-    }
-    private void CargarDatosSimulados()
-    {
-        var especiesFalsas = new List<EspecieItem>
-    {
-        new EspecieItem
-        {
-            Nombre = "Quishuar (Árbol)",
-            DescripcionCorta = "Árbol nativo andino",
-            DescripcionLarga = "El Quishuar es un árbol nativo de los Andes, muy común en las áreas verdes del campus El Olivo. Es reconocido por sus hojas verde grisáceas y su gran resistencia a las bajas temperaturas. Es fundamental para la conservación del suelo.",
-            Tamano = "Hasta 8m de altura",
-            Dieta = "Nutrientes del suelo y luz solar",
-            Estado = "Preocupación Menor (LC)"
-        },
-        new EspecieItem
-        {
-            Nombre = "Orquídea de altura",
-            DescripcionCorta = "Flor endémica",
-            DescripcionLarga = "Especie de orquídea adaptada a los climas andinos. Florece durante la época de lluvias mostrando pétalos vibrantes. Suele encontrarse cerca de zonas húmedas.",
-            Tamano = "15-30 cm",
-            Dieta = "Fotosíntesis",
-            Estado = "Vulnerable (VU)"
-        },
-        new EspecieItem
-        {
-            Nombre = "Helecho Arbóreo",
-            DescripcionCorta = "Planta prehistórica",
-            DescripcionLarga = "Planta fascinante con un tronco grueso y hojas frondosas que parecen plumas gigantes. Prefiere la sombra y aporta mucha humedad al ecosistema local.",
-            Tamano = "2 a 5 metros",
-            Dieta = "Fotosíntesis y humedad ambiental",
-            Estado = "Casi Amenazado (NT)"
-        }
-    };
+    private readonly ApiService _apiService = new ApiService();
 
-        listaFlora.ItemsSource = especiesFalsas;
+    public CatalogoFloraPage()
+    {
+        InitializeComponent();
+    }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await CargarFlora();
+    }
+
+    private async Task CargarFlora()
+    {
+        try
+        {
+            var especiesFlora = await _apiService.ObtenerFloraAsync();
+
+            if (especiesFlora != null && especiesFlora.Count > 0)
+            {
+                listaFlora.ItemsSource = especiesFlora;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"---> Error al cargar Flora: {ex.Message}");
+        }
     }
 
     private async void OnDetalleTapped(object sender, TappedEventArgs e)
     {
-        // Atrapamos el elemento específico al que le dieron clic (ej. El Picaflor)
         var seleccion = e.Parameter as EspecieItem;
 
         if (seleccion != null)
         {
-
             var parametros = new Dictionary<string, object>
-        {
-            { "ItemSeleccionado", seleccion }
-        };
+            {
+                { "ItemSeleccionado", seleccion }
+            };
 
             await Shell.Current.GoToAsync("DetalleItemPage", parametros);
         }
     }
+
     private async void OnInicioTapped(object sender, TappedEventArgs e)
     {
-        // En la navegación de MAUI, ".." significa "volver a la página anterior".
         await Shell.Current.GoToAsync("..");
     }
-    
 }

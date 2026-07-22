@@ -1,17 +1,20 @@
 namespace SmartBiodiversity;
 
-[QueryProperty(nameof(DatosRecibidos), "ItemSeleccionado")]
+[QueryProperty(nameof(ItemSeleccionado), "ItemSeleccionado")]
 public partial class DetalleItemPage : ContentPage
 {
-    private EspecieItem _datosRecibidos;
+    private EspecieItem _itemSeleccionado;
 
-    public EspecieItem DatosRecibidos
+    public EspecieItem ItemSeleccionado
     {
-        get => _datosRecibidos;
+        get => _itemSeleccionado;
         set
         {
-            _datosRecibidos = value;
-            BindingContext = _datosRecibidos;
+            _itemSeleccionado = value;
+
+            // AQUÍ ESTÁ LA MAGIA: Al asignar el BindingContext, el XAML 
+            // lee automáticamente el Nombre, ImagenUrl, DescripcionLarga, etc.
+            BindingContext = _itemSeleccionado;
         }
     }
 
