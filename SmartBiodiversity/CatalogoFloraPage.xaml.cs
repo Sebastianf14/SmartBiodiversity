@@ -46,38 +46,67 @@ public partial class CatalogoFloraPage : ContentPage
 
     private async Task CargarFlora()
     {
+        var flora = await _apiService.ObtenerFloraAsync();
+        listaFlora.ItemsSource = flora;
+    }
+
+    // IR A DETALLE DE LA ESPECIE SELECCIONADA
+    private async void OnDetalleTapped(object sender, EventArgs e)
+    {
         try
         {
-            var especiesFlora = await _apiService.ObtenerFloraAsync();
+            EspecieItem especieSeleccionada = null;
 
-            if (especiesFlora != null && especiesFlora.Count > 0)
+            // 1. Intento por CommandParameter del GestureRecognizer
+            if (sender is TapGestureRecognizer tap && tap.CommandParameter is EspecieItem itemTap)
             {
-                listaFlora.ItemsSource = especiesFlora;
+                especieSeleccionada = itemTap;
+            }
+            // 2. Intento por BindingContext del objeto asignado al Gesture
+            else if (sender is TapGestureRecognizer tapGesture && tapGesture.Parent is BindableObject parentObj)
+            {
+                especieSeleccionada = parentObj.BindingContext as EspecieItem;
+            }
+            // 3. Intento por BindingContext del elemento visual directo (Border/Grid)
+            else if (sender is BindableObject bindable)
+            {
+                especieSeleccionada = bindable.BindingContext as EspecieItem;
+            }
+
+            // Si encontramos la especie, navegamos a la pantalla de detalle
+            if (especieSeleccionada != null)
+            {
+                await Navigation.PushAsync(new DetalleItemPage(especieSeleccionada));
+            }
+            else
+            {
+                await DisplayAlert("Atención", "No se pudo obtener la información de este elemento.", "OK");
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"---> Error al cargar Flora: {ex.Message}");
+            await DisplayAlert("Error de Navegación", $"Ocurrió un detalle al abrir: {ex.Message}", "OK");
         }
     }
 
-    private async void OnDetalleTapped(object sender, TappedEventArgs e)
+    // NAVEGACIÓN BARRA INFERIOR
+    private async void OnInicioTapped(object sender, EventArgs e)
     {
-        var seleccion = e.Parameter as EspecieItem;
-
-        if (seleccion != null)
-        {
-            var parametros = new Dictionary<string, object>
-            {
-                { "ItemSeleccionado", seleccion }
-            };
-
-            await Shell.Current.GoToAsync("DetalleItemPage", parametros);
-        }
+        await Navigation.PopToRootAsync();
     }
 
-    private async void OnInicioTapped(object sender, TappedEventArgs e)
+    private async void OnMapaTapped(object sender, EventArgs e)
     {
-        await Shell.Current.GoToAsync("..");
+        await Navigation.PushAsync(new MapaPage());
+    }
+
+    private async void OnIdentificarTapped(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new IdentificarPage());
+    }
+
+    private async void OnPerfilTapped(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new PerfilPage());
     }
 }

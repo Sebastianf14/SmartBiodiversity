@@ -2,7 +2,6 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="SmartBiodiversity.LoginPage"
-             Title="LoginPage"
              BackgroundColor="White">
     <ScrollView>
         <VerticalStackLayout Padding="30,50,30,30" Spacing="15">
@@ -54,9 +53,13 @@
             </Border>
 
             <Label Text="¿Olvidé mi contraseña?" 
-                   FontSize="12" 
-                   TextColor="Gray" 
-                   HorizontalOptions="End"/>
+             TextColor="Gray" 
+             FontSize="12"
+             HorizontalOptions="End">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnOlvidePasswordTapped" />
+                </Label.GestureRecognizers>
+            </Label>
 
             <Button Text="INICIAR SESIÓN" 
                     Clicked="OnLoginClicked" 

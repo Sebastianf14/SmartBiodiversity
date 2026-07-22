@@ -16,9 +16,7 @@ namespace SmartBiodiversity.Services
             _httpClient = new HttpClient();
         }
 
-        // ==========================================
         // 1. AUTENTICACIÓN Y REGISTRO
-        // ==========================================
 
         public async Task<bool> LoginAsync(string email, string password)
         {
@@ -45,15 +43,28 @@ namespace SmartBiodiversity.Services
             catch (Exception ex) { return (false, ex.Message); }
         }
 
-        public async Task<bool> VerificarCodigoAsync(string email, string codigo)
+        // VERIFICAR CÓDIGO (MEJORADO PARA MOSTRAR LA RESPUESTA REAL DE LA API)
+        public async Task<(bool exito, string mensaje)> VerificarCodigoAsync(string email, string codigo)
         {
             try
             {
                 var payload = new { email = email, codigo = codigo };
                 var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}/Auth/verify-code", payload);
-                return response.IsSuccessStatusCode;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return (true, "OK");
+                }
+                else
+                {
+                    string errorServidor = await response.Content.ReadAsStringAsync();
+                    return (false, $"HTTP {(int)response.StatusCode}: {errorServidor}");
+                }
             }
-            catch { return false; }
+            catch (Exception ex)
+            {
+                return (false, $"Error de red: {ex.Message}");
+            }
         }
 
         public async Task<(bool exito, string mensaje)> RegistrarUsuarioAsync(string nombres, string apellidos, string correo, string password, string codigoVerif)
@@ -84,6 +95,58 @@ namespace SmartBiodiversity.Services
             catch (Exception ex) { return (false, ex.Message); }
         }
 
+        // SOLICITAR CÓDIGO DE OLVIDÉ CONTRASEÑA (/api/Auth/forgot-password)
+        public async Task<(bool exito, string mensaje)> SolicitarCodigoOlvidePasswordAsync(string email)
+        {
+            try
+            {
+                var payload = new { email = email };
+                var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}/Auth/forgot-password", payload);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return (true, "OK");
+                }
+                string error = await response.Content.ReadAsStringAsync();
+                return (false, error);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
+        }
+
+        // RESTABLECER CONTRASEÑA CON EL CÓDIGO/TOKEN (/api/Auth/reset-password)
+        // RESTABLECER CONTRASEÑA (/api/Auth/reset-password)
+        // RESTABLECER CONTRASEÑA (/api/Auth/reset-password)
+        public async Task<(bool exito, string mensaje)> RestablecerPasswordAsync(string email, string token, string nuevaPassword)
+        {
+            try
+            {
+                // JSON formateado exactamente con las propiedades que valida el DTO de ASP.NET Core
+                var payload = new
+                {
+                    Email = email,
+                    Token = token,
+                    NewPassword = nuevaPassword
+                };
+
+                var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}/Auth/reset-password", payload);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return (true, "Contraseña actualizada exitosamente.");
+                }
+
+                string errorRespuesta = await response.Content.ReadAsStringAsync();
+                return (false, string.IsNullOrWhiteSpace(errorRespuesta) ? "Error al procesar la solicitud." : errorRespuesta);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error de conexión con el servidor: {ex.Message}");
+            }
+        }
+
         // ==========================================
         // 2. ESPECIES Y MULTIMEDIA
         // ==========================================
@@ -103,7 +166,6 @@ namespace SmartBiodiversity.Services
             return new List<CategoriaItem>();
         }
 
-        // OBTENER SÓLO FLORA
         public async Task<List<EspecieItem>> ObtenerFloraAsync()
         {
             var todas = await ObtenerEspeciesBaseDatosAsync();
@@ -123,7 +185,6 @@ namespace SmartBiodiversity.Services
                 if (filtradas.Count > 0) return filtradas;
             }
 
-            // Filtro por la ruta de la imagen en Supabase (/Flora/) o el nombre común
             var filtradasPorRuta = todas.Where(e =>
                 (!string.IsNullOrEmpty(e.ImagenUrl) && e.ImagenUrl.ToLower().Contains("/flora/")) ||
                 (!string.IsNullOrEmpty(e.Nombre) && (e.Nombre.ToLower().Contains("orquídea") || e.Nombre.ToLower().Contains("árbol") || e.Nombre.ToLower().Contains("planta") || e.Nombre.ToLower().Contains("flor")))
@@ -132,7 +193,6 @@ namespace SmartBiodiversity.Services
             return filtradasPorRuta;
         }
 
-        // OBTENER SÓLO FAUNA
         public async Task<List<EspecieItem>> ObtenerFaunaAsync()
         {
             var todas = await ObtenerEspeciesBaseDatosAsync();
@@ -152,7 +212,6 @@ namespace SmartBiodiversity.Services
                 if (filtradas.Count > 0) return filtradas;
             }
 
-            // Filtro por la ruta de la imagen en Supabase (/Fauna/) o el nombre común
             var filtradasPorRuta = todas.Where(e =>
                 (!string.IsNullOrEmpty(e.ImagenUrl) && e.ImagenUrl.ToLower().Contains("/fauna/")) ||
                 (!string.IsNullOrEmpty(e.Nombre) && (e.Nombre.ToLower().Contains("sapo") || e.Nombre.ToLower().Contains("sebra") || e.Nombre.ToLower().Contains("perro") || e.Nombre.ToLower().Contains("zorro") || e.Nombre.ToLower().Contains("ave") || e.Nombre.ToLower().Contains("picaflor")))
@@ -161,7 +220,6 @@ namespace SmartBiodiversity.Services
             return filtradasPorRuta;
         }
 
-        // MÉTODO PRINCIPAL QUE CONSUME LAS ESPECIES
         private async Task<List<EspecieItem>> ObtenerEspeciesBaseDatosAsync()
         {
             try
@@ -175,25 +233,21 @@ namespace SmartBiodiversity.Services
 
                     if (especies != null && especies.Count > 0)
                     {
-                        // Traemos el mapa global de fotos por si acaso
                         var mapaFotos = await ObtenerTodasLasMultimediasAsync();
 
                         foreach (var esp in especies)
                         {
-                            // 1. Intentamos consultar la foto por ID individual
                             string urlFoto = null;
                             if (!string.IsNullOrEmpty(esp.Id))
                             {
                                 urlFoto = await ObtenerImagenEspecieAsync(esp.Id);
                             }
 
-                            // 2. Respaldo: si falló, buscamos el ID en el mapa global de la tabla multimedia
                             if (string.IsNullOrEmpty(urlFoto) && !string.IsNullOrEmpty(esp.Id) && mapaFotos.ContainsKey(esp.Id))
                             {
                                 urlFoto = mapaFotos[esp.Id];
                             }
 
-                            // 3. Asignamos la imagen encontrada
                             if (!string.IsNullOrEmpty(urlFoto))
                             {
                                 esp.ImagenUrl = urlFoto;
@@ -211,8 +265,6 @@ namespace SmartBiodiversity.Services
             return new List<EspecieItem>();
         }
 
-        // EXTRACTOR MULTIMEDIA AJUSTADO A PostgreSQL (RutaArchivoMul)
-        // BUSCA MULTIMEDIA POR ID
         private async Task<string> ObtenerImagenEspecieAsync(string especieId)
         {
             if (string.IsNullOrEmpty(especieId)) return null;
@@ -227,7 +279,6 @@ namespace SmartBiodiversity.Services
 
                     string ExtraerRuta(JsonElement elem)
                     {
-                        // Nombres exactos de PostgreSQL (ruta_archivomul)
                         string[] propiedades = new[] {
                             "ruta_archivomul", "rutaArchivoMul", "RutaArchivoMul",
                             "ruta_archivo", "rutaArchivo", "RutaArchivo",
@@ -243,7 +294,6 @@ namespace SmartBiodiversity.Services
                             }
                         }
 
-                        // Detector comodín de enlaces de Supabase
                         foreach (var prop in elem.EnumerateObject())
                         {
                             if (prop.Value.ValueKind == JsonValueKind.String)
@@ -275,7 +325,7 @@ namespace SmartBiodiversity.Services
 
             return null;
         }
-        // MAPA GLOBAL DE RESPALDO (Lee la tabla Multimedia completa)
+
         private async Task<Dictionary<string, string>> ObtenerTodasLasMultimediasAsync()
         {
             var mapa = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -294,7 +344,6 @@ namespace SmartBiodiversity.Services
                             string idEspecie = null;
                             string ruta = null;
 
-                            // Nombres de la clave foránea en SQL (id_especiesmul)
                             string[] propsId = new[] { "id_especiesmul", "idEspeciesMul", "idEspeciesmul", "especieId" };
                             foreach (var p in propsId)
                             {
@@ -305,7 +354,6 @@ namespace SmartBiodiversity.Services
                                 }
                             }
 
-                            // Nombres de la ruta en SQL (ruta_archivomul)
                             string[] propsRuta = new[] { "ruta_archivomul", "rutaArchivoMul", "RutaArchivoMul", "rutaArchivo", "url" };
                             foreach (var p in propsRuta)
                             {
@@ -327,6 +375,33 @@ namespace SmartBiodiversity.Services
             catch { }
 
             return mapa;
+        }
+        // CREAR APORTE DE AVISTAMIENTO (/api/Aportes/crear)
+        public async Task<(bool exito, string mensaje)> CrearAporteAsync(string titulo, string descripcion, string rutaImagen)
+        {
+            try
+            {
+                var payload = new
+                {
+                    tituloApo = string.IsNullOrWhiteSpace(titulo) ? "Avistamiento" : titulo,
+                    descripcionApo = descripcion,
+                    rutaArchivoApo = rutaImagen ?? ""
+                };
+
+                var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}/Aportes/crear", payload);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return (true, "¡Aporte registrado exitosamente!");
+                }
+
+                string error = await response.Content.ReadAsStringAsync();
+                return (false, error);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error al conectar con el servidor: {ex.Message}");
+            }
         }
     }
 }

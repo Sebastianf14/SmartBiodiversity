@@ -1,47 +1,75 @@
 namespace SmartBiodiversity;
 
-[QueryProperty(nameof(ItemSeleccionado), "ItemSeleccionado")]
+using SmartBiodiversity.Models;
+
 public partial class DetalleItemPage : ContentPage
 {
-    private EspecieItem _itemSeleccionado;
-
-    public EspecieItem ItemSeleccionado
+    public DetalleItemPage()
     {
-        get => _itemSeleccionado;
-        set
-        {
-            _itemSeleccionado = value;
+        InitializeComponent();
+    }
 
-            // AQUÍ ESTÁ LA MAGIA: Al asignar el BindingContext, el XAML 
-            // lee automáticamente el Nombre, ImagenUrl, DescripcionLarga, etc.
-            BindingContext = _itemSeleccionado;
+    public DetalleItemPage(EspecieItem especie) : this()
+    {
+        BindingContext = especie;
+        CargarDescripcionAuto(especie);
+    }
+
+    private void CargarDescripcionAuto(EspecieItem especie)
+    {
+        if (especie == null) return;
+
+        string descripcionEncontrada = null;
+
+        // Inspección inteligente de propiedades por si cambia el nombre del atributo en el modelo
+        var propiedades = typeof(EspecieItem).GetProperties();
+        foreach (var prop in propiedades)
+        {
+            string nombreProp = prop.Name.ToLower();
+            if (nombreProp.Contains("descrip") || nombreProp.Contains("detalle") || nombreProp.Contains("info"))
+            {
+                var valor = prop.GetValue(especie)?.ToString();
+                if (!string.IsNullOrWhiteSpace(valor))
+                {
+                    descripcionEncontrada = valor;
+                    break;
+                }
+            }
+        }
+
+        // Si no se encontró texto o el campo está NULL en la BD, asignamos un texto claro por defecto
+        if (string.IsNullOrWhiteSpace(descripcionEncontrada))
+        {
+            string nombreEspecie = string.IsNullOrWhiteSpace(especie.Nombre) ? "esta especie" : especie.Nombre;
+            descripcionEncontrada = $"Especie de {nombreEspecie} registrada dentro del campus El Olivo de la Universidad Técnica del Norte.";
+        }
+
+        if (lblDescripcion != null)
+        {
+            lblDescripcion.Text = descripcionEncontrada;
         }
     }
 
-    public DetalleItemPage()
-	{
-		InitializeComponent();
-	}
-    private async void OnRegresarTapped(object sender, TappedEventArgs e)
+    private async void OnRegresarTapped(object sender, EventArgs e)
     {
-        // Regresa a la pantalla anterior
-        await Shell.Current.GoToAsync("..");
-    }
-    private async void OnInicioTapped(object sender, TappedEventArgs e)
-    {
-        // "../.." significa retroceder dos pantallas (Detalle -> Catálogo -> Dashboard)
-        await Shell.Current.GoToAsync("../..");
+        await Navigation.PopAsync();
     }
 
-    private async void OnMapaTapped(object sender, TappedEventArgs e)
+    private async void OnInicioTapped(object sender, EventArgs e)
     {
-        // Va a la página del mapa
-        await Shell.Current.GoToAsync("MapaPage");
+        await Navigation.PopToRootAsync();
+    }
+    private async void OnIdentificarTapped(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new IdentificarPage());
+    }
+    private async void OnMapaTapped(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new MapaPage());
     }
 
-    private async void OnPerfilTapped(object sender, TappedEventArgs e)
+    private async void OnPerfilTapped(object sender, EventArgs e)
     {
-        // Va a la página de perfil
-        await Shell.Current.GoToAsync("PerfilPage");
+        await Navigation.PushAsync(new PerfilPage());
     }
 }

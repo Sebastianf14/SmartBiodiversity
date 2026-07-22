@@ -6,18 +6,20 @@ namespace SmartBiodiversity;
 public partial class LoginPage : ContentPage
 {
     private readonly ApiService _apiService;
-    public LoginPage()
-	{
-		InitializeComponent();
-        _apiService = new ApiService();
 
+    public LoginPage()
+    {
+        InitializeComponent();
+        _apiService = new ApiService();
     }
+
     protected override void OnAppearing()
     {
         base.OnAppearing();
         txtEmail.Text = string.Empty;
         txtPassword.Text = string.Empty;
     }
+
     private async void OnLoginClicked(object sender, EventArgs e)
     {
         // 1. Revisar Internet
@@ -27,7 +29,7 @@ public partial class LoginPage : ContentPage
             return;
         }
 
-        string email = txtEmail.Text;
+        string email = txtEmail.Text?.Trim();
         string password = txtPassword.Text;
 
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
@@ -41,7 +43,15 @@ public partial class LoginPage : ContentPage
 
         if (loginExitoso)
         {
-            await Shell.Current.GoToAsync("DashboardPage");
+            // GUARDAMOS LOS DATOS EN PREFERENCES
+            string nombreFormateado = email.Contains("@") ? email.Split('@')[0] : "Usuario";
+
+            Preferences.Default.Set("CorreoUsuario", email);
+            Preferences.Default.Set("NombreUsuario", nombreFormateado);
+
+            // ESTABLECEMOS DASHBOARD COMO LA RAÍZ PRINCIPAL DE LA APP
+            // Elimina LoginPage de la pila para que al presionar Inicio siempre vuelva al Saludo
+            Application.Current.MainPage = new NavigationPage(new DashboardPage());
         }
         else
         {
@@ -53,5 +63,10 @@ public partial class LoginPage : ContentPage
     {
         // Ir a la página de registro
         await Navigation.PushAsync(new RegisterPage());
+    }
+
+    private async void OnOlvidePasswordTapped(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new ForgotPasswordPage());
     }
 }

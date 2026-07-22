@@ -7,7 +7,6 @@ namespace SmartBiodiversity.Models
     {
         private string _id;
 
-        // Mapeo flexible para el ID de la especie (id_especies en SQL)
         [JsonPropertyName("id")]
         public string Id { get => _id; set => _id = value; }
 

@@ -53,13 +53,16 @@ public partial class MapaPage : ContentPage
         }
     }
 
-    private async void OnInicioTapped(object sender, TappedEventArgs e)
+    private async void OnInicioTapped(object sender, EventArgs e)
     {
-        await Shell.Current.GoToAsync(".."); // Vuelve al Dashboard
+        await Navigation.PopToRootAsync();
     }
-
-    private async void OnPerfilTapped(object sender, TappedEventArgs e)
+    private async void OnIdentificarTapped(object sender, EventArgs e)
     {
-        await Shell.Current.GoToAsync("PerfilPage");
+        await Navigation.PushAsync(new IdentificarPage());
+    }
+    private async void OnPerfilTapped(object sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new PerfilPage());
     }
 }

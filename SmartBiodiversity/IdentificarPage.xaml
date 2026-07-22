@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SmartBiodiversity.IdentificarPage"
+             BackgroundColor="White"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="*, Auto">
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Padding="20,30,20,20" Spacing="20">
+
+                <!-- Header Logos -->
+                <Grid ColumnDefinitions="*, Auto">
+                    <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                        <Image Source="hoja_icono.png" HeightRequest="30"/>
+                        <Label Text="Smart&#10;Biodiversity" FontSize="12" TextColor="Black" />
+                    </HorizontalStackLayout>
+                    <Image Grid.Column="1" Source="utn_logo.png" HeightRequest="35"/>
+                </Grid>
+
+                <!-- Título y Contador Diario -->
+                <Grid ColumnDefinitions="*, Auto" Margin="0,5,0,0">
+                    <VerticalStackLayout>
+                        <Label Text="Identificar Especie" FontSize="20" FontAttributes="Bold" TextColor="Black"/>
+                        <Label Text="Toma una foto y describe tu hallazgo" FontSize="13" TextColor="Gray"/>
+                    </VerticalStackLayout>
+
+                    <!-- Contador 5/5 diario -->
+                    <Border Grid.Column="1" BackgroundColor="#E8F5E9" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="10,5">
+                        <Label x:Name="lblContadorDiario" Text="0/5 hoy" TextColor="#2E7D32" FontAttributes="Bold" FontSize="12"/>
+                    </Border>
+                </Grid>
+
+                <!-- ÁREA DE LA FOTO -->
+                <Border BackgroundColor="#F5F5F5" 
+                        Stroke="#CCCCCC" 
+                        StrokeThickness="1" 
+                        StrokeShape="RoundRectangle 15" 
+                        HeightRequest="220"
+                        Margin="0,5,0,0">
+                    <Grid>
+                        <!-- Vista previa de la foto tomada -->
+                        <Image x:Name="imgPrevia" Aspect="AspectFill" IsVisible="False"/>
+
+                        <!-- Placeholder previo a tomar la foto -->
+                        <VerticalStackLayout x:Name="panelPlaceholder" VerticalOptions="Center" HorizontalOptions="Center" Spacing="8">
+                            <Label Text="📷" FontSize="45" HorizontalOptions="Center"/>
+                            <Label Text="Presiona el botón para tomar la foto" TextColor="Gray" FontSize="13"/>
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+
+                <!-- Botón Tomar Foto -->
+                <Button Text="📷 Tomar Foto" 
+                        BackgroundColor="#E0E0E0" 
+                        TextColor="Black" 
+                        FontAttributes="Bold" 
+                        CornerRadius="10" 
+                        HeightRequest="45"
+                        Clicked="OnTomarFotoClicked"/>
+
+                <!-- CAMPO OBLIGATORIO: DETALLES -->
+                <VerticalStackLayout Spacing="8">
+                    <HorizontalStackLayout Spacing="5">
+                        <Label Text="Detalles / Descripción del avistamiento" FontAttributes="Bold" FontSize="13" TextColor="Black"/>
+                        <Label Text="*" TextColor="Red" FontAttributes="Bold"/>
+                    </HorizontalStackLayout>
+
+                    <Border BackgroundColor="#F0F0F0" StrokeThickness="0" StrokeShape="RoundRectangle 10" Padding="10">
+                        <Editor x:Name="txtDescripcion" 
+                                Placeholder="Escribe aquí detalles como ubicación dentro del campus, color, tamaño u observaciones de la especie..." 
+                                HeightRequest="100" 
+                                TextColor="Black" 
+                                PlaceholderColor="Gray"
+                                AutoSize="Disabled"/>
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- Botón de Enviar Aporte -->
+                <Button Text="ENVIAR APORTE" 
+                        BackgroundColor="#2E7D32" 
+                        TextColor="White" 
+                        FontAttributes="Bold" 
+                        CornerRadius="12" 
+                        HeightRequest="50"
+                        Margin="0,10,0,0"
+                        Clicked="OnEnviarAporteClicked"/>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Barra de Navegación Inferior -->
+        <Border Grid.Row="1" Stroke="#E0E0E0" StrokeThickness="1" BackgroundColor="White" Padding="0,10,0,15" Margin="-2,0,-2,-2">
+            <Grid ColumnDefinitions="*, *, *, *">
+
+                <VerticalStackLayout Grid.Column="0" HorizontalOptions="Center" Spacing="2">
+                    <Image Source="inicio_icono.png" HeightRequest="25"/>
+                    <Label Text="Inicio" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnInicioTapped" />
+                    </VerticalStackLayout.GestureRecognizers>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center" Spacing="2">
+                    <Image Source="mapa_icono.png" HeightRequest="25"/>
+                    <Label Text="Mapa" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnMapaTapped" />
+                    </VerticalStackLayout.GestureRecognizers>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center" Spacing="2">
+                    <Image Source="identificar_icono.png" HeightRequest="25"/>
+                    <Label Text="Identificar" FontSize="12" TextColor="#2E7D32" FontAttributes="Bold" HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="3" HorizontalOptions="Center" Spacing="2">
+                    <Image Source="perfil_icono.png" HeightRequest="25"/>
+                    <Label Text="Perfil" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnPerfilTapped" />
+                    </VerticalStackLayout.GestureRecognizers>
+                </VerticalStackLayout>
+
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>

@@ -66,7 +66,7 @@ public partial class RegisterPage : ContentPage
     }
 
     // PASO 2: Comprobar el código y crear la cuenta real en la base de datos
-    private async void OnVerificarYCrearClicked(object sender, EventArgs e)
+    private async void OnVerificaryCrearClicked(object sender, EventArgs e)
     {
         if (Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
         {
@@ -84,12 +84,12 @@ public partial class RegisterPage : ContentPage
 
         try
         {
-            // 1. Verificamos el código primero
-            bool codigoValido = await _apiService.VerificarCodigoAsync(txtEmailReg.Text, codigoIngresado);
+            // 1. Verificamos el código desestructurando (exito, mensaje)
+            var (codigoValido, mensajeVerif) = await _apiService.VerificarCodigoAsync(txtEmailReg.Text, codigoIngresado);
 
             if (codigoValido)
             {
-                // 2. Si el código es válido, intentamos crear la cuenta real
+                // 2. Si el código es válido, creamos la cuenta real
                 var resultadoRegistro = await _apiService.RegistrarUsuarioAsync(
                     nombres: txtNombre.Text,
                     apellidos: "",
@@ -104,18 +104,17 @@ public partial class RegisterPage : ContentPage
                 }
                 else
                 {
-                    // Muestra el detalle exacto del error que rechazó la base de datos/API
-                    await DisplayAlert("Error al Registrar", resultadoRegistro.mensaje, "OK");
+                    await DisplayAlert("Error en Registro", resultadoRegistro.mensaje, "OK");
                 }
             }
             else
             {
-                await DisplayAlert("Error", "El código es incorrecto o ha expirado.", "Reintentar");
+                await DisplayAlert("Código Incorrecto", mensajeVerif, "OK");
             }
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Excepción Detectada", ex.Message, "OK");
+            await DisplayAlert("Error Inesperado", ex.Message, "OK");
         }
     }
 

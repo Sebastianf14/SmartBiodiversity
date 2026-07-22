@@ -2,11 +2,12 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="SmartBiodiversity.PerfilPage"
-             Title="PerfilPage"
              BackgroundColor="White"
              Shell.NavBarIsVisible="False">
+
     <Grid RowDefinitions="Auto, *, Auto">
 
+        <!-- Header con Logos -->
         <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Padding="20,30,20,10">
             <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
                 <Image Source="hoja_icono.png" HeightRequest="30"/>
@@ -15,29 +16,65 @@
             <Image Grid.Column="1" Source="utn_logo.png" HeightRequest="35"/>
         </Grid>
 
-        <VerticalStackLayout Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Center" Spacing="15">
+        <!-- Contenido Principal -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="20,10,20,20" Spacing="25">
 
-            <Image Source="perfil_icono.png" HeightRequest="100" WidthRequest="100" HorizontalOptions="Center"/>
+                <!-- Título Mi Perfil -->
+                <Label Text="Mi Perfil" FontSize="22" FontAttributes="Bold" TextColor="Black" Margin="0,5,0,0"/>
 
-            <Label Text="HOLA, USUARIO" FontSize="20" FontAttributes="Bold" TextColor="Black" HorizontalOptions="Center"/>
+                <!-- Tarjeta del Perfil -->
+                <Border BackgroundColor="#E0E0E0" 
+                        StrokeThickness="0" 
+                        StrokeShape="RoundRectangle 15" 
+                        Padding="20"
+                        HeightRequest="120">
+                    <Grid ColumnDefinitions="Auto, *" ColumnSpacing="20" VerticalOptions="Center">
 
-            <Label Text="admin@utn.edu.ec" FontSize="16" TextColor="Gray" HorizontalOptions="Center" Margin="0,0,0,30"/>
+                        <!-- Avatar circular -->
+                        <Border Grid.Column="0" 
+                                BackgroundColor="#C5C5C5" 
+                                StrokeThickness="0" 
+                                StrokeShape="RoundRectangle 40" 
+                                WidthRequest="70" 
+                                HeightRequest="70">
+                            <Label Text="👤" FontSize="35" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
 
-            <Button Text="CERRAR SESIÓN" 
-                    Clicked="OnCerrarSesionClicked" 
-                    BackgroundColor="#D32F2F" 
-                    TextColor="White" 
-                    FontAttributes="Bold" 
-                    CornerRadius="25" 
-                    HeightRequest="50"
-                    WidthRequest="220"
-                    HorizontalOptions="Center"/>
+                        <!-- Nombre y Correo -->
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="3">
+                            <Label x:Name="lblNombrePerfil" 
+                                   Text="Usuario" 
+                                   FontAttributes="Bold" 
+                                   FontSize="16" 
+                                   TextColor="Black" />
+                            <Label x:Name="lblCorreoPerfil" 
+                                   Text="usuario@utn.edu.ec" 
+                                   FontSize="13" 
+                                   TextColor="#555555" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
 
-        </VerticalStackLayout>
+                <!-- Botón Rojo Cerrar Sesión -->
+                <Button Text="Cerrar Sesión" 
+                        BackgroundColor="#FF1D1D" 
+                        TextColor="White" 
+                        FontAttributes="Bold" 
+                        FontSize="16"
+                        CornerRadius="12" 
+                        HeightRequest="50"
+                        Margin="0,60,0,0"
+                        Clicked="OnCerrarSesionClicked"/>
 
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Barra de Navegación Inferior Con Clics Activados -->
         <Border Grid.Row="2" Stroke="#E0E0E0" StrokeThickness="1" BackgroundColor="White" Padding="0,10,0,15" Margin="-2,0,-2,-2">
             <Grid ColumnDefinitions="*, *, *, *">
 
+                <!-- 1. Inicio -->
                 <VerticalStackLayout Grid.Column="0" HorizontalOptions="Center" Spacing="2">
                     <Image Source="inicio_icono.png" HeightRequest="25"/>
                     <Label Text="Inicio" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
@@ -46,16 +83,25 @@
                     </VerticalStackLayout.GestureRecognizers>
                 </VerticalStackLayout>
 
+                <!-- 2. Mapa -->
                 <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center" Spacing="2">
                     <Image Source="mapa_icono.png" HeightRequest="25"/>
                     <Label Text="Mapa" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnMapaTapped" />
+                    </VerticalStackLayout.GestureRecognizers>
                 </VerticalStackLayout>
 
+                <!-- 3. Identificar -->
                 <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center" Spacing="2">
                     <Image Source="identificar_icono.png" HeightRequest="25"/>
                     <Label Text="Identificar" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnIdentificarTapped" />
+                    </VerticalStackLayout.GestureRecognizers>
                 </VerticalStackLayout>
 
+                <!-- 4. Perfil (Página Actual) -->
                 <VerticalStackLayout Grid.Column="3" HorizontalOptions="Center" Spacing="2">
                     <Image Source="perfil_icono.png" HeightRequest="25"/>
                     <Label Text="Perfil" FontSize="12" TextColor="#2E7D32" FontAttributes="Bold" HorizontalOptions="Center"/>

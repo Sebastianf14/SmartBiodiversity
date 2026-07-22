@@ -2,82 +2,69 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="SmartBiodiversity.DetalleItemPage"
-             Title="DetalleItemPage"
              BackgroundColor="White"
              Shell.NavBarIsVisible="False">
 
-    <Grid RowDefinitions="Auto, *, Auto">
+    <Grid RowDefinitions="*, Auto">
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Padding="20,20,20,20" Spacing="15">
 
-        <!-- Header con Logos -->
-        <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Padding="20,30,20,10">
-            <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                <Image Source="hoja_icono.png" HeightRequest="30"/>
-                <Label Text="Smart&#10;Biodiversity" FontSize="12" TextColor="Black" />
-            </HorizontalStackLayout>
-            <Image Grid.Column="1" Source="utn_logo.png" HeightRequest="35"/>
-        </Grid>
-
-        <!-- Contenido Principal -->
-        <ScrollView Grid.Row="1">
-            <VerticalStackLayout Padding="20,10,20,20" Spacing="15">
+                <!-- Header Logos -->
+                <Grid ColumnDefinitions="*, Auto" Margin="0,10,0,10">
+                    <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                        <Image Source="hoja_icono.png" HeightRequest="30"/>
+                        <Label Text="Smart&#10;Biodiversity" FontSize="12" TextColor="Black" />
+                    </HorizontalStackLayout>
+                    <Image Grid.Column="1" Source="utn_logo.png" HeightRequest="35"/>
+                </Grid>
 
                 <!-- Botón Regresar -->
-                <HorizontalStackLayout Spacing="5" Margin="0,0,0,5">
-                    <Label Text="←" FontSize="18" TextColor="Black" VerticalOptions="Center"/>
-                    <Label Text="Regresar" FontSize="14" TextColor="Gray" VerticalOptions="Center"/>
-                    <HorizontalStackLayout.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnRegresarTapped" />
-                    </HorizontalStackLayout.GestureRecognizers>
-                </HorizontalStackLayout>
+                <Label Text="← Regresar" TextColor="Gray" FontSize="14">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnRegresarTapped"/>
+                    </Label.GestureRecognizers>
+                </Label>
 
-                <!-- Nombre de la especie -->
-                <Label Text="{Binding Nombre}" FontSize="24" FontAttributes="Bold" TextColor="Black"/>
+                <!-- Nombre de la Especie -->
+                <Label Text="{Binding Nombre}" 
+                       FontSize="24" 
+                       FontAttributes="Bold" 
+                       TextColor="Black" 
+                       Margin="0,5,0,0"/>
 
-                <!-- IMAGEN REAL DE LA BASE DE DATOS -->
-                <Border BackgroundColor="#E0E0E0" StrokeThickness="0" StrokeShape="RoundRectangle 15" HeightRequest="250">
-                    <Image Source="{Binding ImagenUrl}" Aspect="AspectFill" />
+                <!-- Imagen Real -->
+                <Border BackgroundColor="#F5F5F5" 
+                        StrokeThickness="0" 
+                        StrokeShape="RoundRectangle 15" 
+                        HeightRequest="220">
+                    <Image Source="{Binding ImagenUrl}" Aspect="AspectFit"/>
                 </Border>
 
-                <!-- Tarjeta Celeste: Descripción -->
-                <Border BackgroundColor="#D1F2FA" StrokeThickness="0" StrokeShape="RoundRectangle 10" Padding="15">
-                    <VerticalStackLayout Spacing="5">
-                        <Label Text="Descripción" FontAttributes="Bold" TextColor="Black"/>
-                        <Label Text="{Binding DescripcionLarga}" TextColor="Black" FontSize="13"/>
+                <!-- TARJETA DESCRIPCIÓN AMPLIADA -->
+                <Border BackgroundColor="#E0F7FA" 
+                        StrokeThickness="0" 
+                        StrokeShape="RoundRectangle 12" 
+                        Padding="20,18"
+                        MinimumHeightRequest="180">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Descripción" 
+                               FontAttributes="Bold" 
+                               FontSize="16" 
+                               TextColor="Black"/>
+
+                        <!-- Etiqueta asignada con x:Name -->
+                        <Label x:Name="lblDescripcion"
+                               FontSize="14" 
+                               TextColor="#333333"
+                               LineBreakMode="WordWrap"/>
                     </VerticalStackLayout>
                 </Border>
-
-                <!-- Fila de Detalles y Mapa -->
-                <Grid ColumnDefinitions="*, *" ColumnSpacing="15">
-
-                    <!-- Columna Izquierda: Información -->
-                    <Border Grid.Column="0" BackgroundColor="#D1F2FA" StrokeThickness="0" StrokeShape="RoundRectangle 10" Padding="15">
-                        <VerticalStackLayout Spacing="2">
-                            <Label Text="Tamaño:" FontAttributes="Bold" TextColor="Black" FontSize="12"/>
-                            <Label Text="{Binding Tamano}" TextColor="Black" FontSize="12" Margin="0,0,0,5"/>
-
-                            <Label Text="Dieta:" FontAttributes="Bold" TextColor="Black" FontSize="12"/>
-                            <Label Text="{Binding Dieta}" TextColor="Black" FontSize="12" Margin="0,0,0,5"/>
-
-                            <Label Text="Estado:" FontAttributes="Bold" TextColor="Black" FontSize="12"/>
-                            <Label Text="{Binding Estado}" TextColor="Black" FontSize="12"/>
-                        </VerticalStackLayout>
-                    </Border>
-
-                    <!-- Columna Derecha: Ver Mapa -->
-                    <Border Grid.Column="1" BackgroundColor="#D1F2FA" StrokeThickness="0" StrokeShape="RoundRectangle 10" Padding="15">
-                        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="10">
-                            <Label Text="🗺️" FontSize="30" HorizontalOptions="Center"/>
-                            <Label Text="Ver Mapa de&#10;Avistamientos" FontAttributes="Bold" TextColor="Black" FontSize="12" HorizontalTextAlignment="Center"/>
-                        </VerticalStackLayout>
-                    </Border>
-
-                </Grid>
 
             </VerticalStackLayout>
         </ScrollView>
 
         <!-- Barra de Navegación Inferior -->
-        <Border Grid.Row="2" Stroke="#E0E0E0" StrokeThickness="1" BackgroundColor="White" Padding="0,10,0,15" Margin="-2,0,-2,-2">
+        <Border Grid.Row="1" Stroke="#E0E0E0" StrokeThickness="1" BackgroundColor="White" Padding="0,10,0,15" Margin="-2,0,-2,-2">
             <Grid ColumnDefinitions="*, *, *, *">
 
                 <VerticalStackLayout Grid.Column="0" HorizontalOptions="Center" Spacing="2">

@@ -173,7 +173,7 @@
                 </Border>
 
                 <Button Text="VERIFICAR Y CREAR CUENTA"
-                    Clicked="OnVerificarYCrearClicked"
+                    Clicked="OnVerificaryCrearClicked"
                     BackgroundColor="#2E7D32"
                     TextColor="White"
                     FontAttributes="Bold"

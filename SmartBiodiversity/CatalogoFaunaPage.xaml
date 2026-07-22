@@ -2,54 +2,57 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="SmartBiodiversity.CatalogoFaunaPage"
-             Title="CatalogoFaunaPage"
              BackgroundColor="White"
              Shell.NavBarIsVisible="False">
-    <Grid RowDefinitions="Auto, Auto, Auto, *, Auto">
 
-        <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Padding="20,30,20,10">
-            <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                <Image Source="hoja_icono.png" HeightRequest="30"/>
-                <Label Text="Smart&#10;Biodiversity" FontSize="12" TextColor="Black" />
-            </HorizontalStackLayout>
-            <Image Grid.Column="1" Source="utn_logo.png" HeightRequest="35"/>
-        </Grid>
+    <Grid RowDefinitions="*, Auto">
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Padding="20,30,20,20" Spacing="20">
 
-        <Label Grid.Row="1" Text="Catálogo de Fauna" FontSize="18" FontAttributes="Bold" TextColor="Black" Padding="20,10,20,5"/>
+                <!-- Header Logos -->
+                <Grid ColumnDefinitions="*, Auto">
+                    <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                        <Image Source="hoja_icono.png" HeightRequest="30"/>
+                        <Label Text="Smart&#10;Biodiversity" FontSize="12" TextColor="Black" />
+                    </HorizontalStackLayout>
+                    <Image Grid.Column="1" Source="utn_logo.png" HeightRequest="35"/>
+                </Grid>
 
-        <Border Grid.Row="2" Margin="20,10,20,20" Stroke="Black" StrokeThickness="1" BackgroundColor="White">
-            <SearchBar x:Name="searchBarFlora" Placeholder="Buscar por nombre..." TextColor="Black" PlaceholderColor="Gray"/>
-        </Border>
+                <!-- Título -->
+                <Label Text="Catálogo de Fauna" FontSize="20" FontAttributes="Bold" TextColor="Black"/>
 
-        <CollectionView x:Name="listaFauna" Grid.Row="3" Margin="20,0">
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Border BackgroundColor="#E0E0E0" StrokeThickness="0" StrokeShape="RoundRectangle 10" Margin="0,0,0,15" Padding="15">
-                        <Grid ColumnDefinitions="Auto, *, Auto">
-
-                            <Border Grid.Column="0" StrokeShape="RoundRectangle 8" HeightRequest="50" WidthRequest="50" StrokeThickness="0" VerticalOptions="Center">
-                                <Image Source="{Binding ImagenUrl}" Aspect="AspectFill" />
+                <!-- Lista de Especies -->
+                <CollectionView x:Name="listaFauna">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border BackgroundColor="#E0E0E0" 
+                                    StrokeThickness="0" 
+                                    StrokeShape="RoundRectangle 12" 
+                                    Padding="15,10" 
+                                    Margin="0,0,0,12">
+                                <Grid ColumnDefinitions="Auto, *, Auto">
+                                    <Image Grid.Column="0" Source="{Binding ImagenUrl}" HeightRequest="50" WidthRequest="50" Aspect="AspectFit"/>
+                                    <Label Grid.Column="1" Text="{Binding Nombre}" TextColor="Black" FontAttributes="Bold" VerticalOptions="Center" Margin="15,0,0,0"/>
+                                    <Label Grid.Column="2" Text="Detalle" TextColor="Black" VerticalOptions="Center"/>
+                                </Grid>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnDetalleTapped" CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
                             </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
 
-                            <Label Grid.Column="1" Text="{Binding Nombre}" TextColor="Black" VerticalOptions="Center" Margin="15,0"/>
+            </VerticalStackLayout>
+        </ScrollView>
 
-                            <Label Grid.Column="2" Text="Detalle" FontAttributes="Bold" TextColor="Black" VerticalOptions="Center">
-                                <Label.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnDetalleTapped" CommandParameter="{Binding .}"/>
-                                </Label.GestureRecognizers>
-                            </Label>
-
-                        </Grid>
-                    </Border>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-        <Border Grid.Row="4" Stroke="#E0E0E0" StrokeThickness="1" BackgroundColor="White" Padding="0,10,0,15" Margin="-2,0,-2,-2">
+        <!-- Barra Inferior -->
+        <Border Grid.Row="1" Stroke="#E0E0E0" StrokeThickness="1" BackgroundColor="White" Padding="0,10,0,15" Margin="-2,0,-2,-2">
             <Grid ColumnDefinitions="*, *, *, *">
 
                 <VerticalStackLayout Grid.Column="0" HorizontalOptions="Center" Spacing="2">
                     <Image Source="inicio_icono.png" HeightRequest="25"/>
-                    <Label Text="Inicio" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+                    <Label Text="Inicio" FontSize="12" TextColor="#2E7D32" FontAttributes="Bold" HorizontalOptions="Center"/>
                     <VerticalStackLayout.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnInicioTapped" />
                     </VerticalStackLayout.GestureRecognizers>
