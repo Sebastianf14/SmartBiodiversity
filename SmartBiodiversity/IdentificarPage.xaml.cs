@@ -40,7 +40,6 @@ public partial class IdentificarPage : ContentPage
     // 2. TOMAR FOTO CON LA CÁMARA
     private async void OnTomarFotoClicked(object sender, EventArgs e)
     {
-        // Verificar límite de 5 diarias
         if (ObtenerAportesHoy() >= LIMITE_DIARIO)
         {
             await DisplayAlert("Límite Alcanzado", "Has alcanzado el límite máximo de 5 fotos por día. Intenta de nuevo mañana.", "OK");
@@ -74,54 +73,97 @@ public partial class IdentificarPage : ContentPage
         }
     }
 
-    // 3. ENVIAR APORTE CON VALIDACIONES OBLIGATORIAS
+    // 3. ENVIAR APORTE (SUBIDA A SUPABASE + GUARDADO EN BD)
     private async void OnEnviarAporteClicked(object sender, EventArgs e)
     {
-        // Validación 1: Verificar límite diario
-        int enviadosHoy = ObtenerAportesHoy();
-        if (enviadosHoy >= LIMITE_DIARIO)
+        // Botón enviado a estado de carga
+        var btnEnviar = sender as Button;
+
+        try
         {
-            await DisplayAlert("Límite Alcanzado", "Llegaste al límite de 5 aportes diarios.", "OK");
-            return;
+            // Validación 1: Verificar límite diario
+            int enviadosHoy = ObtenerAportesHoy();
+            if (enviadosHoy >= LIMITE_DIARIO)
+            {
+                await DisplayAlert("Límite Alcanzado", "Llegaste al límite de 5 aportes diarios.", "OK");
+                return;
+            }
+
+            // Validación 2: Verificar foto obligatoria
+            if (string.IsNullOrEmpty(_rutaFotoTomada))
+            {
+                await DisplayAlert("Atención", "Debes tomar una foto antes de enviar.", "OK");
+                return;
+            }
+
+            // Validación 3: Verificar detalles obligatorios
+            string detalles = txtDescripcion.Text?.Trim();
+            if (string.IsNullOrWhiteSpace(detalles))
+            {
+                await DisplayAlert("Detalles Requeridos", "Debes ingresar una descripción o detalles del avistamiento para poder subirlo.", "OK");
+                return;
+            }
+
+            // Cambiar UI a estado "Cargando"
+            if (btnEnviar != null)
+            {
+                btnEnviar.IsEnabled = false;
+                btnEnviar.Text = "Subiendo imagen...";
+            }
+
+            // PASO A: Subir imagen local a Supabase Storage
+            var (urlPublicaImagen, errorSupabase) = await _apiService.SubirImagenSupabaseAsync(_rutaFotoTomada);
+
+            if (string.IsNullOrEmpty(urlPublicaImagen))
+            {
+                await DisplayAlert("Error de Subida a Supabase", errorSupabase, "OK");
+                RestablecerBotonEnviar(btnEnviar);
+                return;
+            }
+
+            if (btnEnviar != null)
+                btnEnviar.Text = "Guardando aporte...";
+
+            // PASO B: Crear aporte en la API con el link generado de Supabase
+            var (exito, mensaje) = await _apiService.CrearAporteAsync("Avistamiento Campus", detalles, urlPublicaImagen);
+
+            if (exito)
+            {
+                // Incrementar contador diario
+                string claveHoy = $"Aportes_{DateTime.Today:yyyyMMdd}";
+                Preferences.Default.Set(claveHoy, enviadosHoy + 1);
+
+                await DisplayAlert("¡Éxito!", "Tu aporte ha sido enviado correctamente para su revisión.", "OK");
+
+                // Limpiar campos y formulario
+                txtDescripcion.Text = string.Empty;
+                _rutaFotoTomada = null;
+                imgPrevia.IsVisible = false;
+                panelPlaceholder.IsVisible = true;
+
+                ActualizarContadorDiario();
+            }
+            else
+            {
+                await DisplayAlert("Error", $"No se pudo subir el aporte: {mensaje}", "OK");
+            }
         }
-
-        // Validación 2: Verificar que haya tomado una foto
-        if (string.IsNullOrEmpty(_rutaFotoTomada))
+        catch (Exception ex)
         {
-            await DisplayAlert("Atención", "Debes tomar una foto antes de enviar.", "OK");
-            return;
+            await DisplayAlert("Error Inesperado", ex.Message, "OK");
         }
-
-        // Validación 3: VERIFICAR QUE HAYA ESCRITO DETALLES (REQUISITO OBLIGATORIO)
-        string detalles = txtDescripcion.Text?.Trim();
-        if (string.IsNullOrWhiteSpace(detalles))
+        finally
         {
-            await DisplayAlert("Detalles Requeridos", "Debes ingresar una descripción o detalles del avistamiento para poder subirlo.", "OK");
-            return;
+            RestablecerBotonEnviar(btnEnviar);
         }
+    }
 
-        // Si pasa todas las validaciones, enviamos a la API
-        var (exito, mensaje) = await _apiService.CrearAporteAsync("Avistamiento Campus", detalles, _rutaFotoTomada);
-
-        if (exito)
+    private void RestablecerBotonEnviar(Button btn)
+    {
+        if (btn != null)
         {
-            // Incrementar contador diario
-            string claveHoy = $"Aportes_{DateTime.Today:yyyyMMdd}";
-            Preferences.Default.Set(claveHoy, enviadosHoy + 1);
-
-            await DisplayAlert("¡Éxito!", "Tu aporte ha sido enviado correctamente para su revisión.", "OK");
-
-            // Limpiar campos
-            txtDescripcion.Text = string.Empty;
-            _rutaFotoTomada = null;
-            imgPrevia.IsVisible = false;
-            panelPlaceholder.IsVisible = true;
-
-            ActualizarContadorDiario();
-        }
-        else
-        {
-            await DisplayAlert("Error", $"No se pudo subir el aporte: {mensaje}", "OK");
+            btn.IsEnabled = true;
+            btn.Text = "ENVIAR APORTE";
         }
     }
 
@@ -130,14 +172,17 @@ public partial class IdentificarPage : ContentPage
     {
         await Navigation.PopToRootAsync();
     }
+
     private async void OnIdentificarTapped(object sender, EventArgs e)
     {
         await Navigation.PushAsync(new IdentificarPage());
     }
+
     private async void OnMapaTapped(object sender, EventArgs e)
     {
         await Navigation.PushAsync(new MapaPage());
     }
+
     private async void OnPerfilTapped(object sender, EventArgs e)
     {
         await Navigation.PushAsync(new PerfilPage());

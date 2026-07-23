@@ -55,6 +55,16 @@
                         </VerticalStackLayout>
                     </Grid>
                 </Border>
+                <!-- BOTÓN DESCARGAR CATÁLOGO PDF -->
+                <Button x:Name="btnDescargarPdf"
+                    Text="📄 Descargar Catálogo (PDF)" 
+                    BackgroundColor="#0288D1" 
+                    TextColor="White" 
+                    FontAttributes="Bold" 
+                    CornerRadius="10" 
+                    HeightRequest="48"
+                    Margin="0,15,0,5"
+                    Clicked="OnDescargarPdfClicked"/>
 
                 <!-- Botón Rojo Cerrar Sesión -->
                 <Button Text="Cerrar Sesión" 

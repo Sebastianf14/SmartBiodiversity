@@ -83,4 +83,19 @@ namespace SmartBiodiversity.Models
         [JsonPropertyName("nombrecat")]
         public string NombrecatSnake { set => _nombre = value; }
     }
+    public class FacultadItem
+    {
+        public string IdFacultad { get; set; }
+        public string Nombre { get; set; }
+        public string Numero { get; set; }
+    }
+
+    public class FacultadEspeciesStats
+    {
+        public string NombreFacultad { get; set; }
+        public int TotalFlora { get; set; }
+        public int TotalFauna { get; set; }
+
+
+    }
 }

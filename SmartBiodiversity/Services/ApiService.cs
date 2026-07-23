@@ -1,8 +1,9 @@
-﻿using System.Text.Json;
+﻿using SmartBiodiversity;
+using SmartBiodiversity.Models;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
-using SmartBiodiversity.Models;
-using SmartBiodiversity;
+using System.Text.Json;
 
 namespace SmartBiodiversity.Services
 {
@@ -24,9 +25,40 @@ namespace SmartBiodiversity.Services
             {
                 var payload = new { email = email, password = password };
                 var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}/Auth/login", payload);
-                return response.IsSuccessStatusCode;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string jsonString = await response.Content.ReadAsStringAsync();
+                    using var doc = JsonDocument.Parse(jsonString);
+                    var root = doc.RootElement;
+
+                    // Extraemos el token devuelto por la API (busca "token" o "accessToken")
+                    string token = "";
+                    if (root.TryGetProperty("token", out var tokenProp))
+                    {
+                        token = tokenProp.GetString();
+                    }
+                    else if (root.TryGetProperty("accessToken", out var accessProp))
+                    {
+                        token = accessProp.GetString();
+                    }
+
+                    // GUARDAMOS EL TOKEN EN PREFERENCES
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        Preferences.Default.Set("AuthToken", token);
+                    }
+
+                    return true;
+                }
+
+                return false;
             }
-            catch { return false; }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"---> Error en Login: {ex.Message}");
+                return false;
+            }
         }
 
         public async Task<(bool exito, string mensaje)> SolicitarCodigoAsync(string email)
@@ -150,7 +182,11 @@ namespace SmartBiodiversity.Services
         // ==========================================
         // 2. ESPECIES Y MULTIMEDIA
         // ==========================================
-
+        // NUEVO MÉTODO AGREGADO PARA SOLUCIONAR EL ERROR:
+        public async Task<List<EspecieItem>> ObtenerEspeciesAsync()
+        {
+            return await ObtenerEspeciesBaseDatosAsync();
+        }
         public async Task<List<CategoriaItem>> ObtenerCategoriasAsync()
         {
             try
@@ -376,32 +412,300 @@ namespace SmartBiodiversity.Services
 
             return mapa;
         }
-        // CREAR APORTE DE AVISTAMIENTO (/api/Aportes/crear)
-        public async Task<(bool exito, string mensaje)> CrearAporteAsync(string titulo, string descripcion, string rutaImagen)
+
+        // 1. SUBIR FOTO A SUPABASE STORAGE
+        // ========================================================
+        public async Task<(string url, string error)> SubirImagenSupabaseAsync(string rutaLocalFoto)
         {
             try
             {
+                if (string.IsNullOrEmpty(rutaLocalFoto) || !File.Exists(rutaLocalFoto))
+                    return (null, "El archivo de la foto no existe en el teléfono.");
+
+                // === PON AQUÍ TUS DATOS REALES DE SUPABASE ===
+                string supabaseUrl = "https://znfxeaownfgdhqonclwc.supabase.co";
+                string supabaseApiKey = "sb_publishable_vBr2ON_MamjTmMJceDlnag_KfAucl9G";
+                string bucketName = "especies-multimedia";
+                // ============================================
+
+                string nombreArchivo = $"aporte_{DateTime.Now:yyyyMMdd_HHmmss}_{Path.GetFileName(rutaLocalFoto)}";
+                string uploadUrl = $"{supabaseUrl}/storage/v1/object/{bucketName}/{nombreArchivo}";
+
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("apikey", supabaseApiKey);
+                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {supabaseApiKey}");
+
+                byte[] bytesImagen = await File.ReadAllBytesAsync(rutaLocalFoto);
+                using var content = new ByteArrayContent(bytesImagen);
+                content.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+
+                var response = await client.PostAsync(uploadUrl, content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string urlPublica = $"{supabaseUrl}/storage/v1/object/public/{bucketName}/{nombreArchivo}";
+                    return (urlPublica, null);
+                }
+
+                string errorRespuesta = await response.Content.ReadAsStringAsync();
+                return (null, $"Error {response.StatusCode}: {errorRespuesta}");
+            }
+            catch (Exception ex)
+            {
+                return (null, $"Excepción: {ex.Message}");
+            }
+        }
+
+        // ========================================================
+        // 2. CREAR APORTE CON LA URL PÚBLICA DE LA IMAGEN
+        // ========================================================
+        // CREAR APORTE (INCLUYE TOKEN JWT DE AUTENTICACIÓN)
+        public async Task<(bool exito, string mensaje)> CrearAporteAsync(string titulo, string descripcion, string urlImagenPublica)
+        {
+            try
+            {
+                // 1. Obtener el Token JWT guardado en las preferencias locales
+                string token = Preferences.Default.Get("AuthToken", Preferences.Default.Get("TokenUsuario", ""));
+
+                // 2. Adjuntar el token en el Header Authorization Bearer
+                if (!string.IsNullOrEmpty(token))
+                {
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                }
+
+                string tituloFinal = string.IsNullOrWhiteSpace(titulo) ? "Avistamiento Campus" : titulo;
+                string descFinal = descripcion ?? "";
+                string rutaFinal = urlImagenPublica ?? "";
+
+                // ========================================================
+                // INTENTO 1: JSON Puro
+                // ========================================================
                 var payload = new
                 {
-                    tituloApo = string.IsNullOrWhiteSpace(titulo) ? "Avistamiento" : titulo,
-                    descripcionApo = descripcion,
-                    rutaArchivoApo = rutaImagen ?? ""
+                    tituloApo = tituloFinal,
+                    descripcionApo = descFinal,
+                    rutaArchivoApo = rutaFinal
                 };
 
-                var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}/Aportes/crear", payload);
+                string jsonPayload = JsonSerializer.Serialize(payload);
+                using var contentJson = new StringContent(jsonPayload, Encoding.UTF8);
+                contentJson.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
+                var response = await _httpClient.PostAsync($"{BaseUrl}/Aportes/crear", contentJson);
+
+                // ========================================================
+                // INTENTO 2: Form-Data si el controlador exige [FromForm]
+                // ========================================================
+                if (response.StatusCode == System.Net.HttpStatusCode.UnsupportedMediaType)
+                {
+                    using var formData = new MultipartFormDataContent();
+                    formData.Add(new StringContent(tituloFinal), "tituloApo");
+                    formData.Add(new StringContent(descFinal), "descripcionApo");
+                    formData.Add(new StringContent(rutaFinal), "rutaArchivoApo");
+
+                    response = await _httpClient.PostAsync($"{BaseUrl}/Aportes/crear", formData);
+                }
+
+                // ========================================================
+                // VERIFICACIÓN DE RESPUESTA
+                // ========================================================
                 if (response.IsSuccessStatusCode)
                 {
                     return (true, "¡Aporte registrado exitosamente!");
                 }
 
-                string error = await response.Content.ReadAsStringAsync();
-                return (false, error);
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    return (false, "Sesión expirada o no autorizada. Cierra sesión e ingresa de nuevo.");
+                }
+
+                string errorRespuesta = await response.Content.ReadAsStringAsync();
+
+                if (string.IsNullOrWhiteSpace(errorRespuesta))
+                    errorRespuesta = $"Código HTTP {(int)response.StatusCode} ({response.ReasonPhrase})";
+
+                return (false, errorRespuesta);
             }
             catch (Exception ex)
             {
-                return (false, $"Error al conectar con el servidor: {ex.Message}");
+                return (false, $"Error de conexión con el servidor: {ex.Message}");
+            }
+
+        }
+
+        // REGISTRAR DESCARGA EN BITÁCORA (/api/Bitacora)
+        public async Task<bool> RegistrarBitacoraAsync(string email, string accion, string detalle)
+        {
+            try
+            {
+                var payload = new
+                {
+                    idUsuarioBit = email,
+                    accionBit = accion,
+                    detalleBit = detalle
+                };
+
+                var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}/Bitacora", payload);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"---> Error en Bitácora: {ex.Message}");
+                return false;
             }
         }
+        // ==========================================
+        // 3. FACULTADES Y ESTADÍSTICAS EXACTAS
+        // ==========================================
+
+        public async Task<List<FacultadItem>> ObtenerFacultadesAsync()
+        {
+            var lista = new List<FacultadItem>();
+            try
+            {
+                var response = await _httpClient.GetAsync($"{BaseUrl}/Facultades");
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    using var doc = JsonDocument.Parse(json);
+
+                    if (doc.RootElement.ValueKind == JsonValueKind.Array)
+                    {
+                        foreach (var elem in doc.RootElement.EnumerateArray())
+                        {
+                            string id = null;
+                            string nombre = null;
+                            string numero = null;
+
+                            // Buscar ID (sea entero, GUID o string)
+                            string[] propsId = new[] { "idFacultad", "id_facultad", "idFacultades", "id", "Id" };
+                            foreach (var p in propsId)
+                            {
+                                if (elem.TryGetProperty(p, out var val))
+                                {
+                                    id = val.ValueKind == JsonValueKind.Number ? val.GetInt32().ToString() : val.GetString();
+                                    if (!string.IsNullOrEmpty(id)) break;
+                                }
+                            }
+
+                            // Buscar Nombre
+                            string[] propsNombre = new[] { "nombre", "nombreFacultad", "nombre_facultad", "Nombre" };
+                            foreach (var p in propsNombre)
+                            {
+                                if (elem.TryGetProperty(p, out var val) && val.ValueKind == JsonValueKind.String)
+                                {
+                                    nombre = val.GetString();
+                                    if (!string.IsNullOrEmpty(nombre)) break;
+                                }
+                            }
+
+                            // Buscar Número de facultad
+                            string[] propsNum = new[] { "numero", "numeroFacultad", "num", "Numero" };
+                            foreach (var p in propsNum)
+                            {
+                                if (elem.TryGetProperty(p, out var val))
+                                {
+                                    numero = val.ValueKind == JsonValueKind.Number ? val.GetInt32().ToString() : val.GetString();
+                                    if (!string.IsNullOrEmpty(numero)) break;
+                                }
+                            }
+
+                            if (!string.IsNullOrEmpty(id))
+                            {
+                                lista.Add(new FacultadItem
+                                {
+                                    IdFacultad = id,
+                                    Nombre = nombre ?? "",
+                                    Numero = numero ?? ""
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"---> Error al obtener facultades: {ex.Message}");
+            }
+            return lista;
+        }
+
+        public async Task<FacultadEspeciesStats> ObtenerEspeciesPorFacultadAsync(string idFacultad)
+        {
+            if (string.IsNullOrEmpty(idFacultad)) return null;
+
+            try
+            {
+                var response = await _httpClient.GetAsync($"{BaseUrl}/Facultades/{idFacultad}/especies");
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    using var doc = JsonDocument.Parse(json);
+                    var root = doc.RootElement;
+
+                    int totalFlora = 0;
+                    int totalFauna = 0;
+                    string nombre = "";
+
+                    // Extraer nombre
+                    string[] propsNombre = new[] { "nombreFacultad", "nombre_facultad", "nombre" };
+                    foreach (var p in propsNombre)
+                    {
+                        if (root.TryGetProperty(p, out var val) && val.ValueKind == JsonValueKind.String)
+                        {
+                            nombre = val.GetString();
+                            break;
+                        }
+                    }
+
+                    // Extraer Total Flora
+                    string[] propsFlora = new[] { "totalFlora", "total_flora", "floraTotal" };
+                    foreach (var p in propsFlora)
+                    {
+                        if (root.TryGetProperty(p, out var val) && val.ValueKind == JsonValueKind.Number)
+                        {
+                            totalFlora = val.GetInt32();
+                            break;
+                        }
+                    }
+
+                    // Extraer Total Fauna
+                    string[] propsFauna = new[] { "totalFauna", "total_fauna", "faunaTotal" };
+                    foreach (var p in propsFauna)
+                    {
+                        if (root.TryGetProperty(p, out var val) && val.ValueKind == JsonValueKind.Number)
+                        {
+                            totalFauna = val.GetInt32();
+                            break;
+                        }
+                    }
+
+                    // Respaldo: Si no vinieron los conteos numéricos, contar elementos dentro de los arreglos 'flora' y 'fauna'
+                    if (totalFlora == 0 && root.TryGetProperty("flora", out var floraArr) && floraArr.ValueKind == JsonValueKind.Array)
+                    {
+                        totalFlora = floraArr.GetArrayLength();
+                    }
+
+                    if (totalFauna == 0 && root.TryGetProperty("fauna", out var faunaArr) && faunaArr.ValueKind == JsonValueKind.Array)
+                    {
+                        totalFauna = faunaArr.GetArrayLength();
+                    }
+
+                    return new FacultadEspeciesStats
+                    {
+                        NombreFacultad = nombre,
+                        TotalFlora = totalFlora,
+                        TotalFauna = totalFauna
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"---> Error especies facultad {idFacultad}: {ex.Message}");
+            }
+
+            return null;
+        }
     }
+    
 }

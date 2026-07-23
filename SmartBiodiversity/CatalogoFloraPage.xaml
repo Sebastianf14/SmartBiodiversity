@@ -61,16 +61,25 @@
                 <VerticalStackLayout Grid.Column="1" HorizontalOptions="Center" Spacing="2">
                     <Image Source="mapa_icono.png" HeightRequest="25"/>
                     <Label Text="Mapa" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnMapaTapped" />
+                    </VerticalStackLayout.GestureRecognizers>
                 </VerticalStackLayout>
 
                 <VerticalStackLayout Grid.Column="2" HorizontalOptions="Center" Spacing="2">
                     <Image Source="identificar_icono.png" HeightRequest="25"/>
                     <Label Text="Identificar" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnIdentificarTapped" />
+                    </VerticalStackLayout.GestureRecognizers>
                 </VerticalStackLayout>
 
                 <VerticalStackLayout Grid.Column="3" HorizontalOptions="Center" Spacing="2">
                     <Image Source="perfil_icono.png" HeightRequest="25"/>
                     <Label Text="Perfil" FontSize="12" TextColor="Black" HorizontalOptions="Center"/>
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnPerfilTapped" />
+                    </VerticalStackLayout.GestureRecognizers>
                 </VerticalStackLayout>
 
             </Grid>
